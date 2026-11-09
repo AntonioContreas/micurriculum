@@ -13,7 +13,9 @@
 #opportunity-form { min-width: 0; margin: 0; }
 .opportunity-form-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 1.25rem; }
 .opportunity-form-heading h3 { font-family: var(--sans); font-size: 0.85rem; font-weight: 600; }
-.opportunity-draft-badge { padding: 0.3rem 0.5rem; border: 1px solid var(--accent-faint); border-radius: 4px; color: var(--accent); background: var(--surface-accent); font-size: 0.56rem; line-height: 1.5; }
+.opportunity-profession-icon { position: relative; display: grid; place-items: center; flex: 0 0 34px; width: 34px; height: 34px; border: 1px solid var(--accent-faint); border-radius: 50%; color: var(--accent); background: var(--surface-accent); }
+.opportunity-profession-icon .icon { --icon: url("../img/icons/people-check.svg"); width: 1.35rem; height: 1.35rem; }
+.opportunity-profession-icon::after { position: absolute; inset: -4px; content: ""; border: 1px solid var(--accent-faint); border-radius: inherit; opacity: 0; pointer-events: none; }
 #opportunity-form label { margin-bottom: 0.4rem; color: var(--ink); font-size: 0.74rem; font-weight: 500; }
 #opportunity-form input, #opportunity-form textarea { height: auto; padding: 0.6rem 0.7rem; margin: 0 0 1rem; border-color: var(--line); color: var(--ink); background: var(--page); font-family: var(--sans); font-size: 0.8rem; line-height: 1.6; }
 #opportunity-form input:focus, #opportunity-form textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--pico-primary-focus); }
@@ -53,8 +55,19 @@
   .opportunity-message-panel { padding: 0.75rem; }
 }
 @media screen and (prefers-reduced-motion: no-preference) {
+  .opportunity-profession-icon .icon { animation: opportunity-people-float 4.6s ease-in-out infinite; }
+  .opportunity-profession-icon::after { animation: opportunity-people-halo 4.6s ease-in-out infinite; }
   .opportunity-action:not(:disabled):not([aria-disabled="true"]) { animation: opportunity-ready 2.8s ease-in-out infinite; }
   .opportunity-action:not(:disabled):not([aria-disabled="true"])::before { animation: opportunity-sheen 4.8s ease-in-out infinite; }
+}
+@keyframes opportunity-people-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1.5px); }
+}
+@keyframes opportunity-people-halo {
+  0%, 100% { opacity: 0; transform: scale(0.94); }
+  35% { opacity: 0.55; }
+  70% { opacity: 0; transform: scale(1.15); }
 }
 @keyframes opportunity-ready {
   0%, 100% { box-shadow: 0 0 0 0 var(--opportunity-glow-soft), 0 4px 12px -7px var(--opportunity-glow); }

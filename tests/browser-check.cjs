@@ -102,6 +102,17 @@ async function main() {
               clientWidth: article.clientWidth
             }));
             assert.ok(bounds.top >= 0 && bounds.bottom <= viewport.height + 1 && bounds.scrollWidth <= bounds.clientWidth + 1, `${id}/${language}/${theme}/${viewport.width}: ${JSON.stringify(bounds)}`);
+            if (id === "opportunity-dialog") {
+              const icon = page.locator(".opportunity-profession-icon");
+              assert.equal(await icon.getAttribute("aria-hidden"), "true");
+              assert.equal(await page.locator(".opportunity-draft-badge").count(), 0);
+              assert.doesNotMatch(await page.locator(".opportunity-form-heading").textContent(), /Borrador local|Local draft/);
+              assert.ok(await icon.evaluate((element) => {
+                const rect = element.getBoundingClientRect();
+                return rect.width === 34 && rect.height === 34 && rect.left >= 0 && rect.right <= innerWidth;
+              }));
+              assert.equal(await icon.locator(".icon").evaluate((element) => getComputedStyle(element).animationName), "none");
+            }
             if (viewport.width === 1366) await audit(`${language}/${theme}/${id}`);
             if (id === "qr-dialog") {
               const png = PNG.sync.read(await page.locator(".qr-large").screenshot());
@@ -193,6 +204,34 @@ async function main() {
     await page.locator(".stats-grid").evaluate((grid) => grid.scrollIntoView({ behavior: "instant", block: "center" }));
     await page.waitForFunction(() => [...document.querySelectorAll("[data-count]")].some((node) => Number(node.textContent) > 0 && Number(node.textContent) < Number(node.dataset.count)));
     await page.waitForFunction(() => [...document.querySelectorAll("[data-count]")].every((node) => node.textContent === node.dataset.count));
+    await page.locator('[data-open-dialog="opportunity-dialog"]').click();
+    const professionIcon = page.locator(".opportunity-profession-icon");
+    const animation = await professionIcon.evaluate(async (element) => {
+      const icon = element.querySelector(".icon");
+      const movement = icon.getAnimations()[0];
+      const initialTime = movement?.currentTime;
+      for (let frame = 0; frame < 3; frame += 1) await new Promise(requestAnimationFrame);
+      return {
+        mask: getComputedStyle(icon).maskImage,
+        movement: getComputedStyle(icon).animationName,
+        halo: getComputedStyle(element, "::after").animationName,
+        advancing: movement?.playState === "running" && movement.currentTime > initialTime
+      };
+    });
+    assert.match(animation.mask, /people-check\.svg/);
+    assert.equal(animation.movement, "opportunity-people-float");
+    assert.equal(animation.halo, "opportunity-people-halo");
+    assert.ok(animation.advancing, "The HR icon animation must actually advance");
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.waitForFunction(() => {
+      const element = document.querySelector(".opportunity-profession-icon");
+      return getComputedStyle(element.querySelector(".icon")).animationName === "none" && getComputedStyle(element, "::after").animationName === "none";
+    });
+    for (const [label, width, height] of [["desktop", 1366, 768], ["mobile", 390, 844]]) {
+      await page.setViewportSize({ width, height });
+      await page.screenshot({ path: path.join(screenshots, `opportunity-icon-${label}.png`) });
+    }
+    await page.keyboard.press("Escape");
     assert.deepEqual(errors, []);
     assert.deepEqual(failedRequests, []);
     assert.deepEqual(externalRequests, []);

@@ -93,6 +93,17 @@ test("contact opens locally and the opportunity draft must be reviewed", () => {
   assert.equal(translations.es["opportunity.greeting"], "Hola, Antonio:");
 });
 
+test("the local draft label is replaced by an accessible decorative HR icon", () => {
+  const opportunityCSS = read("css/opportunity.css");
+  assert.doesNotMatch(html + JSON.stringify(translations), /Borrador local|Local draft|opportunity\.draft|opportunity-draft-badge/);
+  assert.match(html, /class="opportunity-profession-icon" aria-hidden="true"><span class="icon"><\/span>/);
+  assert.match(opportunityCSS, /url\("\.\.\/img\/icons\/people-check\.svg"\)/);
+  assert.match(opportunityCSS, /@media screen and \(prefers-reduced-motion: no-preference\)\s*\{\s*\.opportunity-profession-icon/);
+  assert.match(opportunityCSS, /@keyframes opportunity-people-float/);
+  assert.match(opportunityCSS, /@keyframes opportunity-people-halo/);
+  assert.ok(fs.existsSync(path.join(root, "img/icons/people-check.svg")));
+});
+
 test("education and experience follow the original CV without inventing credentials", () => {
   assert.equal(translations.es["hero.role"], "Ingeniero en Recursos Humanos");
   assert.match(translations.es["hero.degreeNote"], /Titulado · IACC/);
